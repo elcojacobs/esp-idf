@@ -19,7 +19,9 @@
 
 #include "hal/soc_hal.h"
 #include "hal/soc_ll.h"
+#include "hal/rtc_cntl_ll.h"
 #include "soc/soc_caps.h"
+#include "soc/rtc.h"
 
 #if SOC_CPU_CORES_NUM > 1
 void soc_hal_stall_core(int core)

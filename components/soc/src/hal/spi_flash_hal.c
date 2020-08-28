@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include "hal/spi_flash_hal.h"
 #include "string.h"
+#include "soc/spi_caps.h"
 #include "hal/hal_defs.h"
 
 #define APB_CYCLE_NS   (1000*1000*1000LL/APB_CLK_FREQ)
@@ -36,7 +37,7 @@ static const spi_flash_hal_clock_config_t spi_flash_clk_cfg_reg[ESP_FLASH_SPEED_
     {80e6, SPI_FLASH_LL_CLKREG_VAL_80MHZ},
 };
 
-#ifdef CONFIG_IDF_TARGET_ESP32S2
+#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
 static const spi_flash_hal_clock_config_t spi_flash_gpspi_clk_cfg_reg[ESP_FLASH_SPEED_MAX] = {
     {5e6,  {.gpspi=GPSPI_FLASH_LL_CLKREG_VAL_5MHZ}},
     {10e6, {.gpspi=GPSPI_FLASH_LL_CLKREG_VAL_10MHZ}},
@@ -63,21 +64,25 @@ static inline int get_dummy_n(bool gpio_is_used, int input_delay_ns, int eff_clk
     return apb_period_n / apbclk_n;
 }
 
-esp_err_t spi_flash_hal_init(spi_flash_memspi_data_t *data_out, const spi_flash_memspi_config_t *cfg)
+esp_err_t spi_flash_hal_init(spi_flash_hal_context_t *data_out, const spi_flash_hal_config_t *cfg)
 {
     if (!esp_ptr_internal(data_out)) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    if (cfg->cs_num >= SOC_SPI_PERIPH_CS_NUM(cfg->host_id)) {
         return ESP_ERR_INVALID_ARG;
     }
 
     spi_flash_hal_clock_config_t clock_cfg = spi_flash_clk_cfg_reg[cfg->speed];
 
-#ifdef CONFIG_IDF_TARGET_ESP32S2
+#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
     if (cfg->host_id > SPI_HOST) {
         clock_cfg = spi_flash_gpspi_clk_cfg_reg[cfg->speed];
     }
 #endif
 
-    *data_out = (spi_flash_memspi_data_t) {
+    *data_out = (spi_flash_hal_context_t) {
+        .inst = data_out->inst, // Keeps the function pointer table
         .spi = spi_flash_ll_get_hw(cfg->host_id),
         .cs_num = cfg->cs_num,
         .extra_dummy = get_dummy_n(!cfg->iomux, cfg->input_delay_ns, clock_cfg.freq),
@@ -88,18 +93,18 @@ esp_err_t spi_flash_hal_init(spi_flash_memspi_data_t *data_out, const spi_flash_
     return ESP_OK;
 }
 
-bool spi_flash_hal_supports_direct_write(spi_flash_host_driver_t *host, const void *p)
+bool spi_flash_hal_supports_direct_write(spi_flash_host_inst_t *host, const void *p)
 {
-    bool direct_write = ( ((spi_flash_memspi_data_t *)host->driver_data)->spi != spi_flash_ll_get_hw(SPI_HOST)
+    bool direct_write = ( ((spi_flash_hal_context_t *)host)->spi != spi_flash_ll_get_hw(SPI_HOST)
                           || esp_ptr_in_dram(p) );
     return direct_write;
 }
 
 
-bool spi_flash_hal_supports_direct_read(spi_flash_host_driver_t *host, const void *p)
+bool spi_flash_hal_supports_direct_read(spi_flash_host_inst_t *host, const void *p)
 {
   //currently the host doesn't support to read through dma, no word-aligned requirements
-    bool direct_read = ( ((spi_flash_memspi_data_t *)host->driver_data)->spi != spi_flash_ll_get_hw(SPI_HOST)
+    bool direct_read = ( ((spi_flash_hal_context_t *)host)->spi != spi_flash_ll_get_hw(SPI_HOST)
                          || esp_ptr_in_dram(p) );
     return direct_read;
 }

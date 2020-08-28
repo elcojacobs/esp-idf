@@ -53,6 +53,9 @@ static void spp_read_handle(void * param)
     int size = 0;
     int fd = (int)param;
     do {
+        /* controll the log frequency, retry after 1s */
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+
         size = read (fd, spp_data, SPP_DATA_LEN);
         ESP_LOGI(SPP_TAG, "fd = %d data_len = %d", fd, size);
         if (size == -1) {
@@ -150,6 +153,10 @@ void esp_bt_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
         ESP_LOGI(SPP_TAG, "ESP_BT_GAP_KEY_REQ_EVT Please enter passkey!");
         break;
 #endif
+
+    case ESP_BT_GAP_MODE_CHG_EVT:
+        ESP_LOGI(SPP_TAG, "ESP_BT_GAP_MODE_CHG_EVT mode:%d", param->mode_chg.mode);
+        break;
 
     default: {
         ESP_LOGI(SPP_TAG, "event: %d", event);

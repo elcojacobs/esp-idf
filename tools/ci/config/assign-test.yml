@@ -14,6 +14,8 @@ assign_test:
     EXAMPLE_CONFIG_OUTPUT_PATH: "$CI_PROJECT_DIR/examples/test_configs"
     TEST_APP_CONFIG_OUTPUT_PATH: "$CI_PROJECT_DIR/tools/test_apps/test_configs"
     UNIT_TEST_CASE_FILE: "${CI_PROJECT_DIR}/components/idf_test/unit_test"
+    # auto_test_script is compatible with Python 3 only
+    PYTHON_VER: 3
   artifacts:
     paths:
       - components/idf_test/*/CIConfigs
@@ -22,6 +24,7 @@ assign_test:
       - $TEST_APP_CONFIG_OUTPUT_PATH
       - build_examples/artifact_index.json
       - build_test_apps/artifact_index.json
+      - tools/unit-test-app/builds/artifact_index.json
     expire_in: 1 week
   only:
     variables:
@@ -33,13 +36,13 @@ assign_test:
       - $BOT_LABEL_CUSTOM_TEST
   script:
     # assign example tests
-    - python tools/ci/python_packages/ttfw_idf/CIAssignExampleTest.py $IDF_PATH/examples $CI_TARGET_TEST_CONFIG_FILE $EXAMPLE_CONFIG_OUTPUT_PATH
+    - python tools/ci/python_packages/ttfw_idf/IDFAssignTest.py example_test $IDF_PATH/examples $CI_TARGET_TEST_CONFIG_FILE $EXAMPLE_CONFIG_OUTPUT_PATH
     # assign test apps
-    - python tools/ci/python_packages/ttfw_idf/CIAssignExampleTest.py --custom-group test-apps --job-prefix test_app_test_ $IDF_PATH/tools/test_apps $CI_TARGET_TEST_CONFIG_FILE $TEST_APP_CONFIG_OUTPUT_PATH
+    - python tools/ci/python_packages/ttfw_idf/IDFAssignTest.py custom_test  $IDF_PATH/tools/test_apps $CI_TARGET_TEST_CONFIG_FILE $TEST_APP_CONFIG_OUTPUT_PATH
     # assign unit test cases
-    - python tools/ci/python_packages/ttfw_idf/CIAssignUnitTest.py $UNIT_TEST_CASE_FILE $CI_TARGET_TEST_CONFIG_FILE $IDF_PATH/components/idf_test/unit_test/CIConfigs
+    - python tools/ci/python_packages/ttfw_idf/IDFAssignTest.py unit_test $UNIT_TEST_CASE_FILE $CI_TARGET_TEST_CONFIG_FILE $IDF_PATH/components/idf_test/unit_test/CIConfigs
     # clone test script to assign tests
-    - git clone $TEST_SCRIPT_REPOSITORY
+    - ./tools/ci/retry_failed.sh git clone $TEST_SCRIPT_REPOSITORY
     - python $CHECKOUT_REF_SCRIPT auto_test_script auto_test_script
     - cd auto_test_script
     # assgin integration test cases
@@ -70,7 +73,7 @@ update_test_cases:
     PYTHON_VER: 3
   script:
     - export GIT_SHA=$(echo ${CI_COMMIT_SHA} | cut -c 1-8)
-    - git clone $TEST_MANAGEMENT_REPO
+    - ./tools/ci/retry_failed.sh git clone $TEST_MANAGEMENT_REPO
     - python $CHECKOUT_REF_SCRIPT test-management test-management
     - cd test-management
     - echo $BOT_JIRA_ACCOUNT > ${BOT_ACCOUNT_CONFIG_FILE}
@@ -79,5 +82,6 @@ update_test_cases:
     - python ImportTestCase.py $JIRA_TEST_MANAGEMENT_PROJECT unity -d $UNIT_TEST_CASE_FILES -r $GIT_SHA
     # update example test cases
     - python ImportTestCase.py $JIRA_TEST_MANAGEMENT_PROJECT tiny_test_fw -d ${CI_PROJECT_DIR}/examples -r $GIT_SHA
+    - python ImportTestCase.py $JIRA_TEST_MANAGEMENT_PROJECT tiny_test_fw -d ${CI_PROJECT_DIR}/tools/test_apps -r $GIT_SHA
     # organize test cases
     - python OrganizeTestCases.py $JIRA_TEST_MANAGEMENT_PROJECT

@@ -34,15 +34,12 @@
 #include "esp_coexist_internal.h"
 #include "driver/periph_ctrl.h"
 #include "esp_private/wifi.h"
+#include "esp_rom_crc.h"
 
 #if CONFIG_IDF_TARGET_ESP32
-#include "esp32/rom/ets_sys.h"
 #include "esp32/rom/rtc.h"
-#include "esp32/rom/crc.h"
 #elif CONFIG_IDF_TARGET_ESP32S2
-#include "esp32s2/rom/ets_sys.h"
 #include "esp32s2/rom/rtc.h"
-#include "esp32s2/rom/crc.h"
 #endif
 
 #if CONFIG_IDF_TARGET_ESP32
@@ -58,14 +55,6 @@ static uint32_t s_module_phy_rf_init = 0;
 
 /* Whether modem sleep is turned on */
 static volatile bool s_is_phy_rf_en = false;
-
-#if CONFIG_IDF_TARGET_ESP32
-/* Whether WiFi/BT common clock enabled reference */
-static volatile int32_t s_common_clock_enable_ref = 0;
-
-/* PHY spinlock mux */
-static portMUX_TYPE s_phy_spin_lock = portMUX_INITIALIZER_UNLOCKED;
-#endif
 
 /* Bit mask of modules needing to enter modem sleep mode */
 static uint32_t s_modem_sleep_module_enter = 0;
@@ -195,63 +184,16 @@ static inline void phy_update_wifi_mac_time(bool en_clock_stopped, int64_t now)
         }
     }
 }
-
-IRAM_ATTR static inline void phy_spin_lock(void)
-{
-    if (xPortInIsrContext()) {
-        portENTER_CRITICAL_ISR(&s_phy_spin_lock);
-    } else {
-        portENTER_CRITICAL(&s_phy_spin_lock);
-    }
-}
-
-IRAM_ATTR static inline void phy_spin_unlock(void)
-{
-    if (xPortInIsrContext()) {
-        portEXIT_CRITICAL_ISR(&s_phy_spin_lock);
-    } else {
-        portEXIT_CRITICAL(&s_phy_spin_lock);
-    }
-}
 #endif
 
 IRAM_ATTR void esp_phy_common_clock_enable(void)
 {
-#if CONFIG_IDF_TARGET_ESP32
-    phy_spin_lock();
-
-    if (s_common_clock_enable_ref == 0) {
-        // Enable WiFi/BT common clock
-        periph_module_enable(PERIPH_WIFI_BT_COMMON_MODULE);
-    }
-
-    s_common_clock_enable_ref++;
-    phy_spin_unlock();
-#else
-    periph_module_enable(PERIPH_WIFI_BT_COMMON_MODULE);
-#endif
+    wifi_bt_common_module_enable();
 }
 
 IRAM_ATTR void esp_phy_common_clock_disable(void)
 {
-#if CONFIG_IDF_TARGET_ESP32
-    phy_spin_lock();
-
-    if (s_common_clock_enable_ref > 0) {
-        s_common_clock_enable_ref --;
-
-        if (s_common_clock_enable_ref == 0) {
-            // Disable WiFi/BT common clock
-            periph_module_disable(PERIPH_WIFI_BT_COMMON_MODULE);
-        }
-    } else {
-        abort();
-    }
-
-    phy_spin_unlock();
-#else
-    periph_module_disable(PERIPH_WIFI_BT_COMMON_MODULE);
-#endif
+    wifi_bt_common_module_disable();
 }
 
 esp_err_t esp_phy_rf_init(const esp_phy_init_data_t* init_data, esp_phy_calibration_mode_t mode,
@@ -843,7 +785,7 @@ void esp_phy_load_cal_and_init(phy_rf_module_t module)
 static esp_err_t phy_crc_check_init_data(uint8_t* init_data, const uint8_t* checksum, size_t init_data_length)
 {   
     uint32_t crc_data = 0;
-    crc_data = crc32_le(crc_data, init_data, init_data_length);
+    crc_data = esp_rom_crc32_le(crc_data, init_data, init_data_length);
     uint32_t crc_size_conversion = htonl(crc_data);
 
     if (crc_size_conversion != *(uint32_t*)(checksum)) {

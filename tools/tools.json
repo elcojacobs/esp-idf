@@ -113,6 +113,59 @@
       ]
     },
     {
+      "description": "Toolchain for RISC-V",
+      "export_paths": [
+        [
+          "xPacks",
+          "riscv-none-embed-gcc",
+          "8.2.0-3.1",
+          "bin"
+        ]
+      ],
+      "export_vars": {},
+      "info_url": "https://github.com/xpack-dev-tools/riscv-none-embed-gcc-xpack",
+      "install": "on_request",
+      "license": "MIT",
+      "name": "riscv-none-embed-gcc",
+      "version_cmd": [
+        "riscv-none-embed-gcc",
+        "--version"
+      ],
+      "version_regex": "(riscv-none-embed-gcc) \\(xPack GNU RISC-V Embedded GCC, 64-bit\\) (8.2.0)",
+      "version_regex_replace": "\\1-\\2",
+      "versions": [
+        {
+          "linux-amd64": {
+            "sha256": "3d40fab50ebad8424ff85748f25d2eaee50f86a5d5222abd7a45a2e490f1e4f5",
+            "size": 216042047,
+            "url": "https://github.com/xpack-dev-tools/riscv-none-embed-gcc-xpack/releases/download/v8.2.0-3.1/xpack-riscv-none-embed-gcc-8.2.0-3.1-linux-x64.tgz"
+          },
+          "linux-i686": {
+            "sha256": "2e856ee33ef544a2405183366cdf299da2cca697e8cc57627dfaad8ab4460a99",
+            "size": 219854326,
+            "url": "https://github.com/xpack-dev-tools/riscv-none-embed-gcc-xpack/releases/download/v8.2.0-3.1/xpack-riscv-none-embed-gcc-8.2.0-3.1-linux-x32.tgz"
+          },
+          "macos": {
+            "sha256": "48ece50b7272a8e49e56e37f54f9962f93dce4ca44f1bb4c8113fab0230fbdf1",
+            "size": 214715632,
+            "url": "https://github.com/xpack-dev-tools/riscv-none-embed-gcc-xpack/releases/download/v8.2.0-3.1/xpack-riscv-none-embed-gcc-8.2.0-3.1-darwin-x64.tgz"
+          },
+          "name": "riscv-none-embed-gcc-8.2.0",
+          "status": "recommended",
+          "win32": {
+            "sha256": "78bcd52f7b404133de3b2f9568e7101c1de747f98db3a7b0d6251b75a1754867",
+            "size": 232387519,
+            "url": "https://github.com/xpack-dev-tools/riscv-none-embed-gcc-xpack/releases/download/v8.2.0-3.1/xpack-riscv-none-embed-gcc-8.2.0-3.1-win32-x32.zip"
+          },
+          "win64": {
+            "sha256": "98b60720607f1400081806d60d70796b30399f8b426e2c790a4abb0bffb9e5ec",
+            "size": 241927614,
+            "url": "https://github.com/xpack-dev-tools/riscv-none-embed-gcc-xpack/releases/download/v8.2.0-3.1/xpack-riscv-none-embed-gcc-8.2.0-3.1-win32-x64.zip"
+          }
+        }
+      ]
+    },
+    {
       "description": "Toolchain for ESP32 ULP coprocessor",
       "export_paths": [
         [
@@ -325,31 +378,31 @@
       "versions": [
         {
           "linux-amd64": {
-            "sha256": "55755f03ed76cbd2fddb4bc2d85327b95e1a5c728bfacb77af08bf26e65a3628",
-            "size": 1728177,
-            "url": "https://github.com/espressif/openocd-esp32/releases/download/v0.10.0-esp32-20200420/openocd-esp32-linux64-0.10.0-esp32-20200420.tar.gz"
+            "sha256": "77a232510625c23489d9bf1b17bdadf56e95acf8f50ef8ebff51477f23c21ef0",
+            "size": 1729401,
+            "url": "https://github.com/espressif/openocd-esp32/releases/download/v0.10.0-esp32-20200709/openocd-esp32-linux64-0.10.0-esp32-20200709.tar.gz"
           },
           "linux-armel": {
-            "sha256": "dbe2f78be0f15c5e5ff9ac9e445c9cf6a9a6be31f0038c4e1822960fcd8ad615",
-            "size": 1777775,
-            "url": "https://github.com/espressif/openocd-esp32/releases/download/v0.10.0-esp32-20200420/openocd-esp32-armel-0.10.0-esp32-20200420.tar.gz"
+            "sha256": "b2cc6b7837f3cac23a752a8c43c6e0b19701ee0ec1eca4896833f0e82746062e",
+            "size": 1778274,
+            "url": "https://github.com/espressif/openocd-esp32/releases/download/v0.10.0-esp32-20200709/openocd-esp32-armel-0.10.0-esp32-20200709.tar.gz"
           },
           "macos": {
-            "sha256": "a5bb0389e355c58f593a460aea2e41f0c07f9f1bb2bc08101914bb37017271c9",
-            "size": 1811349,
-            "url": "https://github.com/espressif/openocd-esp32/releases/download/v0.10.0-esp32-20200420/openocd-esp32-macos-0.10.0-esp32-20200420.tar.gz"
+            "sha256": "97cf84dd3dfb129a7d4842599870a3b0dbb40b2713d3c5153738c44907e85d6e",
+            "size": 1811755,
+            "url": "https://github.com/espressif/openocd-esp32/releases/download/v0.10.0-esp32-20200709/openocd-esp32-macos-0.10.0-esp32-20200709.tar.gz"
           },
-          "name": "v0.10.0-esp32-20200420",
+          "name": "v0.10.0-esp32-20200709",
           "status": "recommended",
           "win32": {
-            "sha256": "3d13feca3e7e16b8442069aec8267e6bf12de489a29647df760a1da6c33d7f2e",
-            "size": 2150749,
-            "url": "https://github.com/espressif/openocd-esp32/releases/download/v0.10.0-esp32-20200420/openocd-esp32-win32-0.10.0-esp32-20200420.zip"
+            "sha256": "b96b95607ca0c5899427f5b88cda7389da11f53ac857d3d2fe467e571af5137e",
+            "size": 2152463,
+            "url": "https://github.com/espressif/openocd-esp32/releases/download/v0.10.0-esp32-20200709/openocd-esp32-win32-0.10.0-esp32-20200709.zip"
           },
           "win64": {
-            "sha256": "3d13feca3e7e16b8442069aec8267e6bf12de489a29647df760a1da6c33d7f2e",
-            "size": 2150749,
-            "url": "https://github.com/espressif/openocd-esp32/releases/download/v0.10.0-esp32-20200420/openocd-esp32-win32-0.10.0-esp32-20200420.zip"
+            "sha256": "b96b95607ca0c5899427f5b88cda7389da11f53ac857d3d2fe467e571af5137e",
+            "size": 2152463,
+            "url": "https://github.com/espressif/openocd-esp32/releases/download/v0.10.0-esp32-20200709/openocd-esp32-win32-0.10.0-esp32-20200709.zip"
           }
         }
       ]

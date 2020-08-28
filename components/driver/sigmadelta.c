@@ -17,12 +17,13 @@
 #include "driver/sigmadelta.h"
 #include "esp_heap_caps.h"
 #include "hal/sigmadelta_hal.h"
+#include "esp_rom_gpio.h"
 
 static const char *TAG = "SIGMADELTA";
 
-#define SIGMADELTA_CHECK(a,str,ret_val) if(!(a)) { \
-        ESP_LOGE(TAG,"%s:%d (%s):%s", __FILE__, __LINE__, __FUNCTION__, str); \
-        return (ret_val); \
+#define SIGMADELTA_CHECK(a,str,ret_val) if(!(a)) {                 \
+        ESP_LOGE(TAG,"%s(%d): %s", __FUNCTION__, __LINE__, str);   \
+        return (ret_val);                                          \
     }
 
 typedef struct {
@@ -58,7 +59,7 @@ static inline esp_err_t _sigmadelta_set_pin(sigmadelta_port_t sigmadelta_port, s
 
     PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[gpio_num], PIN_FUNC_GPIO);
     gpio_set_direction(gpio_num, GPIO_MODE_OUTPUT);
-    gpio_matrix_out(gpio_num, GPIO_SD0_OUT_IDX + channel, 0, 0);
+    esp_rom_gpio_connect_out_signal(gpio_num, GPIO_SD0_OUT_IDX + channel, 0, 0);
     return ESP_OK;
 }
 

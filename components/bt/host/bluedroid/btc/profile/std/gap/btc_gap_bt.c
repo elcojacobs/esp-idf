@@ -950,10 +950,13 @@ void btc_gap_bt_busy_level_updated(uint8_t bl_flags)
         param.disc_st_chg.state = ESP_BT_GAP_DISCOVERY_STARTED;
         btc_gap_bt_cb_to_app(ESP_BT_GAP_DISC_STATE_CHANGED_EVT, &param);
         btc_gap_bt_inquiry_in_progress = true;
-    } else if (bl_flags == BTM_BL_INQUIRY_CANCELLED ||
-               bl_flags == BTM_BL_INQUIRY_COMPLETE) {
+    } else if (bl_flags == BTM_BL_INQUIRY_CANCELLED) {
         param.disc_st_chg.state = ESP_BT_GAP_DISCOVERY_STOPPED;
         btc_gap_bt_cb_to_app(ESP_BT_GAP_DISC_STATE_CHANGED_EVT, &param);
+        btc_gap_bt_inquiry_in_progress = false;
+    } else if (bl_flags == BTM_BL_INQUIRY_COMPLETE) {
+        /* The Inquiry Complete event is not transported to app layer,
+        since the app only cares about the Name Discovery Complete event */
         btc_gap_bt_inquiry_in_progress = false;
     }
 }
@@ -977,6 +980,9 @@ void btc_gap_bt_cb_deep_free(btc_msg_t *msg)
     case BTC_GAP_BT_KEY_NOTIF_EVT:
     case BTC_GAP_BT_KEY_REQ_EVT:
 #endif ///BT_SSP_INCLUDED == TRUE
+#if (BTC_DM_PM_INCLUDED == TRUE)
+    case BTC_GAP_BT_MODE_CHG_EVT:
+#endif /// BTC_DM_PM_INCLUDED == TRUE
         break;
     default:
         BTC_TRACE_ERROR("%s: Unhandled event (%d)!\n", __FUNCTION__, msg->act);
@@ -1039,6 +1045,12 @@ void btc_gap_bt_cb_handler(btc_msg_t *msg)
         break;
     }
 #endif
+
+#if (BTC_DM_PM_INCLUDED == TRUE)
+    case BTC_GAP_BT_MODE_CHG_EVT:
+        btc_gap_bt_cb_to_app(ESP_BT_GAP_MODE_CHG_EVT,(esp_bt_gap_cb_param_t *)msg->arg);
+        break;
+#endif /// BTC_DM_PM_INCLUDED == TRUE
     default:
         BTC_TRACE_ERROR("%s: Unhandled event (%d)!\n", __FUNCTION__, msg->act);
         break;

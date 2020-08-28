@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <esp_types.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include "esp_types.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "esp_log.h"
@@ -24,13 +24,12 @@
 #include "soc/sens_reg.h"
 #include "soc/sens_struct.h"
 #include "driver/temp_sensor.h"
-#include "esp32s2/rom/ets_sys.h"
 
 static const char *TAG = "tsens";
 
 #define TSENS_CHECK(res, ret_val) ({                                    \
     if (!(res)) {                                                       \
-        ESP_LOGE(TAG, "%s:%d (%s)", __FILE__, __LINE__, __FUNCTION__);  \
+        ESP_LOGE(TAG, "%s(%d)", __FUNCTION__, __LINE__);                \
         return (ret_val);                                               \
     }                                                                   \
 })

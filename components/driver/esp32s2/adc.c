@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <esp_types.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include "sdkconfig.h"
+#include "esp_types.h"
 #include "esp_log.h"
 #include "sys/lock.h"
 #include "freertos/FreeRTOS.h"
@@ -27,9 +28,7 @@
 #include "driver/rtc_cntl.h"
 #include "driver/gpio.h"
 #include "driver/adc.h"
-#include "sdkconfig.h"
 
-#include "esp32s2/rom/ets_sys.h"
 #include "hal/adc_types.h"
 #include "hal/adc_hal.h"
 
@@ -44,7 +43,7 @@ static const char *ADC_TAG = "ADC";
 
 #define ADC_CHECK(a, str, ret_val) ({                                               \
     if (!(a)) {                                                                     \
-        ESP_LOGE(ADC_TAG,"%s:%d (%s):%s", __FILE__, __LINE__, __FUNCTION__, str);   \
+        ESP_LOGE(ADC_TAG,"%s(%d): %s", __FUNCTION__, __LINE__, str);                \
         return (ret_val);                                                           \
     }                                                                               \
 })

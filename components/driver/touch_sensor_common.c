@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <esp_types.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include "sdkconfig.h"
+#include "esp_types.h"
 #include "esp_log.h"
 #include "sys/lock.h"
 #include "freertos/FreeRTOS.h"
@@ -26,20 +27,14 @@
 #include "driver/touch_pad.h"
 #include "driver/rtc_cntl.h"
 #include "driver/gpio.h"
-#include "sdkconfig.h"
 
-#if CONFIG_IDF_TARGET_ESP32
-#include "esp32/rom/ets_sys.h"
-#elif CONFIG_IDF_TARGET_ESP32S2
-#include "esp32s2/rom/ets_sys.h"
-#endif
 #include "hal/touch_sensor_types.h"
 #include "hal/touch_sensor_hal.h"
 
 static const char *TOUCH_TAG = "TOUCH_SENSOR";
 #define TOUCH_CHECK(a, str, ret_val) ({                                             \
     if (!(a)) {                                                                     \
-        ESP_LOGE(TOUCH_TAG,"%s:%d (%s):%s", __FILE__, __LINE__, __FUNCTION__, str);   \
+        ESP_LOGE(TOUCH_TAG,"%s(%d): %s", __FUNCTION__, __LINE__, str);              \
         return (ret_val);                                                           \
     }                                                                               \
 })

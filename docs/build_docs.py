@@ -69,15 +69,20 @@ def main():
     # functions and this way makes Python 2 compatibility really tough if there is any code that assumes text files contain strings (kconfiglib assumes this).
     # The reason for that is that you need to import io.open() to support the encoding argument on Python 2, and this function always uses Py2's unicode
     # type not the str type.
-    if 'UTF-8' not in locale.getlocale():
-        raise RuntimeError("build_docs.py requires the default locale's encoding to be UTF-8. " +
-                           "Setting environment variable LC_ALL=C.UTF-8 when running build_docs.py may be enough to fix this.")
+    if ('UTF-8' not in locale.getlocale()) and ('utf8' not in locale.getlocale()):
+        raise RuntimeError("build_docs.py requires the default locale's encoding to be UTF-8.\n" +
+                           " - Linux. Setting environment variable LC_ALL=C.UTF-8 when running build_docs.py may be " +
+                           "enough to fix this.\n"
+                           " - Windows. Possible solution for the Windows 10 starting version 1803. Go to " +
+                           "Control Panel->Clock and Region->Region->Administrative->Change system locale...; " +
+                           "Check `Beta: Use Unicode UTF-8 for worldwide language support` and reboot")
 
     parser = argparse.ArgumentParser(description='build_docs.py: Build IDF docs', prog='build_docs.py')
 
     parser.add_argument("--language", "-l", choices=LANGUAGES, required=False)
     parser.add_argument("--target", "-t", choices=TARGETS, required=False)
     parser.add_argument("--build-dir", "-b", type=str, default="_build")
+    parser.add_argument("--source-dir", "-s", type=str, default="")
     parser.add_argument("--builders", "-bs", nargs='+', type=str, default=["html"],
                         help="List of builders for Sphinx, e.g. html or latex, for latex a PDF is also generated")
     parser.add_argument("--sphinx-parallel-builds", "-p", choices=["auto"] + [str(x) for x in range(8)],
@@ -155,7 +160,9 @@ def parallel_call(args, callback):
     for target in targets:
         for language in languages:
             build_dir = os.path.realpath(os.path.join(args.build_dir, language, target))
-            entries.append((language, target, build_dir, args.sphinx_parallel_jobs, args.builders, args.input_docs))
+            source_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), args.source_dir, language)
+
+            entries.append((language, target, build_dir, source_dir, args.sphinx_parallel_jobs, args.builders, args.input_docs))
 
     print(entries)
     errcodes = pool.map(callback, entries)
@@ -177,7 +184,7 @@ def parallel_call(args, callback):
         return 0
 
 
-def sphinx_call(language, target, build_dir, sphinx_parallel_jobs, buildername, input_docs):
+def sphinx_call(language, target, build_dir, src_dir, sphinx_parallel_jobs, buildername, input_docs):
     # Note: because this runs in a multiprocessing Process, everything which happens here should be isolated to a single process
     # (ie it doesn't matter if Sphinx is using global variables, as they're it's own copy of the global variables)
 
@@ -204,7 +211,7 @@ def sphinx_call(language, target, build_dir, sphinx_parallel_jobs, buildername, 
             "-t", target,
             "-D", "idf_target={}".format(target),
             "-D", "docs_to_build={}".format(",". join(input_docs)),
-            os.path.join(os.path.abspath(os.path.dirname(__file__)), language),  # srcdir for this language
+            src_dir,
             os.path.join(build_dir, buildername)                    # build directory
             ]
 
@@ -240,9 +247,9 @@ def action_build(args):
 
 
 def call_build_docs(entry):
-    (language, target, build_dir, sphinx_parallel_jobs, builders, input_docs) = entry
+    (language, target, build_dir, src_dir, sphinx_parallel_jobs, builders, input_docs) = entry
     for buildername in builders:
-        ret = sphinx_call(language, target, build_dir, sphinx_parallel_jobs, buildername, input_docs)
+        ret = sphinx_call(language, target, build_dir, src_dir, sphinx_parallel_jobs, buildername, input_docs)
 
         # Warnings are checked after each builder as logs are overwritten
         # check Doxygen warnings:
@@ -384,12 +391,12 @@ def check_docs(language, target, log_file, known_warnings_file, out_sanitized_lo
 
 
 def action_linkcheck(args):
+    args.builders = "linkcheck"
     return parallel_call(args, call_linkcheck)
 
 
 def call_linkcheck(entry):
-    # Remove the last entry which the buildername, since the linkcheck builder is not supplied through the builder list argument
-    return sphinx_call(*entry[:4], buildername="linkcheck")
+    return sphinx_call(*entry)
 
 
 # https://github.com/espressif/esp-idf/tree/

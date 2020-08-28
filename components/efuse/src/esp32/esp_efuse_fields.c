@@ -17,7 +17,6 @@
 #include "esp_efuse_table.h"
 #include "stdlib.h"
 #include "esp_types.h"
-#include "esp32/rom/efuse.h"
 #include "assert.h"
 #include "esp_err.h"
 #include "esp_log.h"
@@ -72,7 +71,7 @@ void esp_efuse_disable_basic_rom_console(void)
 {
     if (!esp_efuse_read_field_bit(ESP_EFUSE_CONSOLE_DEBUG_DISABLE)) {
         esp_efuse_write_field_cnt(ESP_EFUSE_CONSOLE_DEBUG_DISABLE, 1);
-        ESP_EARLY_LOGI(TAG, "Disable BASIC ROM Console fallback via efuse...");
+        ESP_LOGI(TAG, "Disable BASIC ROM Console fallback via efuse...");
     }
 }
 

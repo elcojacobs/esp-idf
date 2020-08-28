@@ -30,6 +30,8 @@
 #include "hal/emac.h"
 #include "soc/soc.h"
 #include "sdkconfig.h"
+#include "esp_rom_gpio.h"
+#include "esp_rom_sys.h"
 
 static const char *TAG = "emac_esp32";
 #define MAC_CHECK(a, str, goto_tag, ret_value, ...)                               \
@@ -86,7 +88,7 @@ static esp_err_t emac_esp32_write_phy_reg(esp_eth_mac_t *mac, uint32_t phy_addr,
     uint32_t to = 0;
     bool busy = true;
     do {
-        ets_delay_us(100);
+        esp_rom_delay_us(100);
         busy = emac_hal_is_mii_busy(&emac->hal);
         to += 100;
     } while (busy && to < PHY_OPERATION_TIMEOUT_US);
@@ -107,7 +109,7 @@ static esp_err_t emac_esp32_read_phy_reg(esp_eth_mac_t *mac, uint32_t phy_addr, 
     uint32_t to = 0;
     bool busy = true;
     do {
-        ets_delay_us(100);
+        esp_rom_delay_us(100);
         busy = emac_hal_is_mii_busy(&emac->hal);
         to += 100;
     } while (busy && to < PHY_OPERATION_TIMEOUT_US);
@@ -275,12 +277,12 @@ static void emac_esp32_init_smi_gpio(emac_esp32_t *emac)
 {
     /* Setup SMI MDC GPIO */
     gpio_set_direction(emac->smi_mdc_gpio_num, GPIO_MODE_OUTPUT);
-    gpio_matrix_out(emac->smi_mdc_gpio_num, EMAC_MDC_O_IDX, false, false);
+    esp_rom_gpio_connect_out_signal(emac->smi_mdc_gpio_num, EMAC_MDC_O_IDX, false, false);
     PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[emac->smi_mdc_gpio_num], PIN_FUNC_GPIO);
     /* Setup SMI MDIO GPIO */
     gpio_set_direction(emac->smi_mdio_gpio_num, GPIO_MODE_INPUT_OUTPUT);
-    gpio_matrix_out(emac->smi_mdio_gpio_num, EMAC_MDO_O_IDX, false, false);
-    gpio_matrix_in(emac->smi_mdio_gpio_num, EMAC_MDI_I_IDX, false);
+    esp_rom_gpio_connect_out_signal(emac->smi_mdio_gpio_num, EMAC_MDO_O_IDX, false, false);
+    esp_rom_gpio_connect_in_signal(emac->smi_mdio_gpio_num, EMAC_MDI_I_IDX, false);
     PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[emac->smi_mdio_gpio_num], PIN_FUNC_GPIO);
 }
 
